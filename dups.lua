@@ -1,47 +1,66 @@
--- Версия для мобильных устройств
-local screenWidth, screenHeight = guiGetScreenSize()
-local buttonSize = 50
-local buttonX, buttonY = screenWidth - buttonSize - 20, 20
-local menuVisible = false
-local touchStartTime = 0
+-- Mobile Friendly UI with G Button
+local ScreenWidth, ScreenHeight = guiGetScreenSize()
+local ButtonSize = 60
+local ButtonPosX, ButtonPosY = ScreenWidth - ButtonSize - 30, 30
+local MenuVisible = false
+local ButtonActive = false
 
-function drawButton()
-    -- Рисуем круглую кнопку
-    dxDrawCircle(buttonX, buttonY, buttonSize, 0xFF000000)
-    dxDrawText("G", buttonX, buttonY, buttonX + buttonSize, buttonY + buttonSize, 
-              0xFFFFFFFF, 1.0, "default", "center", "center")
+function DrawCircle(x, y, radius, color, segments)
+    segments = segments or 32
+    local points = {}
+    for i = 0, segments do
+        local angle = math.rad(i * 360 / segments)
+        table.insert(points, x + math.cos(angle) * radius)
+        table.insert(points, y + math.sin(angle) * radius)
+    end
+    dxDrawPolygon(points, color)
 end
 
-function drawMenu()
-    if not menuVisible then return end
-    
-    -- Полупрозрачное черное меню
-    dxDrawRectangle(0, 0, screenWidth, screenHeight, 0x90000000)
-    
-    -- Белая рамка
-    local border = 2
-    dxDrawRectangle(0, 0, screenWidth, border, 0xFFFFFFFF) -- верх
-    dxDrawRectangle(0, 0, border, screenHeight, 0xFFFFFFFF) -- лево
-    dxDrawRectangle(screenWidth - border, 0, border, screenHeight, 0xFFFFFFFF) -- право
-    dxDrawRectangle(0, screenHeight - border, screenWidth, border, 0xFFFFFFFF) -- низ
+function ToggleMenu()
+    MenuVisible = not MenuVisible
+    ButtonActive = not ButtonActive
+    playSoundFrontEnd(ButtonActive and 1 or 2)
 end
 
-function handleTouches()
-    local touches = getActiveTouches()
+function CheckTouch()
+    local touches = getTouchEvents()
     for _, touch in ipairs(touches) do
-        if touch.justPressed then
-            -- Проверяем попадание в кнопку
-            local dx = touch.x - (buttonX + buttonSize/2)
-            local dy = touch.y - (buttonY + buttonSize/2)
-            if dx*dx + dy*dy <= (buttonSize/2)*(buttonSize/2) then
-                menuVisible = not menuVisible
+        if touch.state == "down" then
+            local dx = touch.x - (ButtonPosX + ButtonSize/2)
+            local dy = touch.y - (ButtonPosY + ButtonSize/2)
+            if dx*dx + dy*dy <= (ButtonSize/2)*(ButtonSize/2) then
+                ToggleMenu()
+                return true
             end
         end
     end
+    return false
 end
 
 addEventHandler("onClientRender", root, function()
-    drawButton()
-    drawMenu()
-    handleTouches()
+    -- Draw G Button
+    DrawCircle(ButtonPosX + ButtonSize/2, ButtonPosY + ButtonSize/2, ButtonSize/2, MenuVisible and 0xFF333333 or 0xFF000000)
+    dxDrawText("G", ButtonPosX, ButtonPosY, ButtonPosX + ButtonSize, ButtonPosY + ButtonSize, 
+             0xFFFFFFFF, 1.5, "default-bold", "center", "center")
+    
+    -- Draw Menu Background
+    if MenuVisible then
+        dxDrawRectangle(0, 0, ScreenWidth, ScreenHeight, 0xAA000000)
+        dxDrawRectangle(0, 0, ScreenWidth, 2, 0xFFFFFFFF) -- Top border
+        dxDrawRectangle(0, ScreenHeight-2, ScreenWidth, 2, 0xFFFFFFFF) -- Bottom border
+        dxDrawRectangle(0, 0, 2, ScreenHeight, 0xFFFFFFFF) -- Left border
+        dxDrawRectangle(ScreenWidth-2, 0, 2, ScreenHeight, 0xFFFFFFFF) -- Right border
+    end
+end)
+
+addEventHandler("onClientTouch", root, function()
+    CheckTouch()
+end)
+
+-- For debugging on PC
+bindKey("mouse1", "down", function()
+    local cursorX, cursorY = getCursorPosition()
+    if cursorX and cursorY then
+        CheckTouch({x = cursorX*ScreenWidth, y = cursorY*ScreenHeight, state = "down"})
+    end
 end)
