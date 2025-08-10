@@ -1,107 +1,265 @@
 local player = game:GetService("Players").LocalPlayer
 local TweenService = game:GetService("TweenService")
 
--- Создаем главный GUI
+-- Создаем GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "SimpleDupeMenu"
+gui.Name = "GardenDupeGUI"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
--- Функция для скругления углов
-local function createRoundCorners(frame, radius)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius)
-    corner.Parent = frame
-end
+-- Стиль из изображения
+local COLOR_SCHEME = {
+    background = Color3.fromRGB(40, 40, 45),
+    accent = Color3.fromRGB(80, 180, 120),
+    text = Color3.fromRGB(240, 240, 240),
+    status = Color3.fromRGB(220, 220, 220)
+}
 
--- Круглая кнопка активации
+-- Круглая кнопка активации (G)
 local activateButton = Instance.new("TextButton")
 activateButton.Size = UDim2.new(0, 50, 0, 50)
 activateButton.Position = UDim2.new(1, -60, 0, 10)
 activateButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+activateButton.BackgroundTransparency = 0.5  -- Полупрозрачный фон
 activateButton.Text = "G"
-activateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+activateButton.TextColor3 = COLOR_SCHEME.accent  -- Зеленый текст как в "GROW A GARDEN"
 activateButton.Font = Enum.Font.GothamBold
-activateButton.TextSize = 20
+activateButton.TextSize = 24
 activateButton.ZIndex = 10
-createRoundCorners(activateButton, 25)
+activateButton.AutoButtonColor = false
+
+-- Скругление кнопки
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0)  -- Полностью круглый
+corner.Parent = activateButton
+
 activateButton.Parent = gui
 
--- Основное меню (скрыто по умолчанию)
+-- Основное меню
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 300, 0, 200)
 mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+mainFrame.BackgroundColor3 = COLOR_SCHEME.background
+mainFrame.BackgroundTransparency = 0.1  -- Полупрозрачность
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
-createRoundCorners(mainFrame, 12)
 
--- Белая обводка
-local border = Instance.new("Frame")
-border.Size = UDim2.new(1, 2, 1, 2)
-border.Position = UDim2.new(0, -1, 0, -1)
-border.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-border.BorderSizePixel = 0
-border.ZIndex = -1
-createRoundCorners(border, 14)
+-- Обводка как на изображении
+local border = Instance.new("UIStroke")
+border.Color = Color3.fromRGB(255, 255, 255)
+border.Thickness = 1
 border.Parent = mainFrame
+
+-- Контент меню
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1, -20, 1, -20)
+content.Position = UDim2.new(0, 10, 0, 10)
+content.BackgroundTransparency = 1
+content.Parent = mainFrame
+
+-- Текст статуса (как на изображении)
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 20)
+statusLabel.Position = UDim2.new(0, 0, 0, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Status: Backpack full!"
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 14
+statusLabel.TextColor3 = COLOR_SCHEME.status
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = content
+
+-- Статистика (как на изображении)
+local statsLabel = Instance.new("TextLabel")
+statsLabel.Size = UDim2.new(1, 0, 0, 60)
+statsLabel.Position = UDim2.new(0, 0, 0, 25)
+statsLabel.BackgroundTransparency = 1
+statsLabel.Text = "Dupe cycles: 10\nItems created: 99\nLast Item: Carrot Seed [X]"
+statsLabel.Font = Enum.Font.Gotham
+statsLabel.TextSize = 14
+statsLabel.TextColor3 = COLOR_SCHEME.text
+statsLabel.TextXAlignment = Enum.TextXAlignment.Left
+statsLabel.TextYAlignment = Enum.TextYAlignment.Top
+statsLabel.Parent = content
+
+-- Кнопка дублирования
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(1, 0, 0, 40)
+toggleButton.Position = UDim2.new(0, 0, 1, -50)
+toggleButton.BackgroundColor3 = COLOR_SCHEME.accent
+toggleButton.Text = "Enable Real Dupe"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 16
+toggleButton.Parent = content
+
+-- Telegram (как на изображении)
+local telegramLabel = Instance.new("TextLabel")
+telegramLabel.Size = UDim2.new(1, -10, 0, 20)
+telegramLabel.Position = UDim2.new(0, 0, 1, -25)
+telegramLabel.BackgroundTransparency = 1
+telegramLabel.Text = "TELEGRAM: @RogsScript"
+telegramLabel.Font = Enum.Font.GothamBold
+telegramLabel.TextSize = 14
+telegramLabel.TextColor3 = Color3.fromRGB(150, 150, 255)
+telegramLabel.TextXAlignment = Enum.TextXAlignment.Right
+telegramLabel.Parent = content
 
 mainFrame.Parent = gui
 
--- Текст статуса
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -20, 0, 40)
-statusLabel.Position = UDim2.new(0, 10, 0, 10)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Status: Inactive"
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 16
-statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-statusLabel.Parent = mainFrame
-
--- Переключатель дублирования
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 120, 0, 40)
-toggleButton.Position = UDim2.new(0.5, -60, 1, -60)
-toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-toggleButton.Text = "Enable Dupe"
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Font = Enum.Font.Gotham
-toggleButton.TextSize = 16
-createRoundCorners(toggleButton, 8)
-toggleButton.Parent = mainFrame
-
--- Переменные состояния
+-- Анимация кнопки G
 local isMenuVisible = false
-local isDupeActive = false
-
--- Обработчик кнопки активации
 activateButton.MouseButton1Click:Connect(function()
     isMenuVisible = not isMenuVisible
     mainFrame.Visible = isMenuVisible
     
-    -- Анимация кнопки
     TweenService:Create(activateButton, TweenInfo.new(0.2), {
-        BackgroundColor3 = isMenuVisible and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(0, 0, 0)
+        BackgroundTransparency = isMenuVisible and 0.7 or 0.5,
+        TextColor3 = isMenuVisible and Color3.fromRGB(255, 255, 255) or COLOR_SCHEME.accent
     }):Play()
 end)
 
--- Обработчик переключателя дублирования
-toggleButton.MouseButton1Click:Connect(function()
-    isDupeActive = not isDupeActive
+-- Эффекты при наведении
+activateButton.MouseEnter:Connect(function()
+    TweenService:Create(activateButton, TweenInfo.new(0.2), {
+        BackgroundTransparency = 0.3
+    }):Play()
+end)
+
+activateButton.MouseLeave:Connect(function()
+    TweenService:Create(activateButton, TweenInfo.new(0.2), {
+        BackgroundTransparency = isMenuVisible and 0.7 or 0.5
+    }):Play()
+end)local player = game:GetService("Players").LocalPlayer
+local TweenService = game:GetService("TweenService")
+
+-- Создаем GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "GardenDupeGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Стиль из изображения
+local COLOR_SCHEME = {
+    background = Color3.fromRGB(40, 40, 45),
+    accent = Color3.fromRGB(80, 180, 120),
+    text = Color3.fromRGB(240, 240, 240),
+    status = Color3.fromRGB(220, 220, 220)
+}
+
+-- Круглая кнопка активации (G)
+local activateButton = Instance.new("TextButton")
+activateButton.Size = UDim2.new(0, 50, 0, 50)
+activateButton.Position = UDim2.new(1, -60, 0, 10)
+activateButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+activateButton.BackgroundTransparency = 0.5  -- Полупрозрачный фон
+activateButton.Text = "G"
+activateButton.TextColor3 = COLOR_SCHEME.accent  -- Зеленый текст как в "GROW A GARDEN"
+activateButton.Font = Enum.Font.GothamBold
+activateButton.TextSize = 24
+activateButton.ZIndex = 10
+activateButton.AutoButtonColor = false
+
+-- Скругление кнопки
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0)  -- Полностью круглый
+corner.Parent = activateButton
+
+activateButton.Parent = gui
+
+-- Основное меню
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.BackgroundColor3 = COLOR_SCHEME.background
+mainFrame.BackgroundTransparency = 0.1  -- Полупрозрачность
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = false
+
+-- Обводка как на изображении
+local border = Instance.new("UIStroke")
+border.Color = Color3.fromRGB(255, 255, 255)
+border.Thickness = 1
+border.Parent = mainFrame
+
+-- Контент меню
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1, -20, 1, -20)
+content.Position = UDim2.new(0, 10, 0, 10)
+content.BackgroundTransparency = 1
+content.Parent = mainFrame
+
+-- Текст статуса (как на изображении)
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 20)
+statusLabel.Position = UDim2.new(0, 0, 0, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Status: Backpack full!"
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 14
+statusLabel.TextColor3 = COLOR_SCHEME.status
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = content
+
+-- Статистика (как на изображении)
+local statsLabel = Instance.new("TextLabel")
+statsLabel.Size = UDim2.new(1, 0, 0, 60)
+statsLabel.Position = UDim2.new(0, 0, 0, 25)
+statsLabel.BackgroundTransparency = 1
+statsLabel.Text = "Dupe cycles: 10\nItems created: 99\nLast Item: Carrot Seed [X]"
+statsLabel.Font = Enum.Font.Gotham
+statsLabel.TextSize = 14
+statsLabel.TextColor3 = COLOR_SCHEME.text
+statsLabel.TextXAlignment = Enum.TextXAlignment.Left
+statsLabel.TextYAlignment = Enum.TextYAlignment.Top
+statsLabel.Parent = content
+
+-- Кнопка дублирования
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(1, 0, 0, 40)
+toggleButton.Position = UDim2.new(0, 0, 1, -50)
+toggleButton.BackgroundColor3 = COLOR_SCHEME.accent
+toggleButton.Text = "Enable Real Dupe"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 16
+toggleButton.Parent = content
+
+-- Telegram (как на изображении)
+local telegramLabel = Instance.new("TextLabel")
+telegramLabel.Size = UDim2.new(1, -10, 0, 20)
+telegramLabel.Position = UDim2.new(0, 0, 1, -25)
+telegramLabel.BackgroundTransparency = 1
+telegramLabel.Text = "TELEGRAM: @RogsScript"
+telegramLabel.Font = Enum.Font.GothamBold
+telegramLabel.TextSize = 14
+telegramLabel.TextColor3 = Color3.fromRGB(150, 150, 255)
+telegramLabel.TextXAlignment = Enum.TextXAlignment.Right
+telegramLabel.Parent = content
+
+mainFrame.Parent = gui
+
+-- Анимация кнопки G
+local isMenuVisible = false
+activateButton.MouseButton1Click:Connect(function()
+    isMenuVisible = not isMenuVisible
+    mainFrame.Visible = isMenuVisible
     
-    if isDupeActive then
-        toggleButton.Text = "Disable Dupe"
-        statusLabel.Text = "Status: Active"
-        TweenService:Create(toggleButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(80, 180, 120)
-        }):Play()
-    else
-        toggleButton.Text = "Enable Dupe"
-        statusLabel.Text = "Status: Inactive"
-        TweenService:Create(toggleButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-        }):Play()
-    end
+    TweenService:Create(activateButton, TweenInfo.new(0.2), {
+        BackgroundTransparency = isMenuVisible and 0.7 or 0.5,
+        TextColor3 = isMenuVisible and Color3.fromRGB(255, 255, 255) or COLOR_SCHEME.accent
+    }):Play()
+end)
+
+-- Эффекты при наведении
+activateButton.MouseEnter:Connect(function()
+    TweenService:Create(activateButton, TweenInfo.new(0.2), {
+        BackgroundTransparency = 0.3
+    }):Play()
+end)
+
+activateButton.MouseLeave:Connect(function()
+    TweenService:Create(activateButton, TweenInfo.new(0.2), {
+        BackgroundTransparency = isMenuVisible and 0.7 or 0.5
+    }):Play()
 end)
