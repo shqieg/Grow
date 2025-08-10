@@ -1,9 +1,17 @@
 local player = game:GetService("Players").LocalPlayer
 local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+
+-- Конфигурация
+local CONFIG = {
+    KEY = "shdodjdhdi@Fox_Scripts",
+    TELEGRAM = "@Fox_Scripts",
+    API_URL = "http://your-api.com/checkkey" -- Замените на ваш API
+}
 
 -- Создаем GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "GardenDupeProGUI"
+gui.Name = "GardenDupePremium"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -14,18 +22,19 @@ local COLOR_SCHEME = {
     accent = Color3.fromRGB(80, 180, 120),
     text = Color3.fromRGB(240, 240, 240),
     red = Color3.fromRGB(220, 80, 80),
-    green = Color3.fromRGB(80, 180, 120)
+    green = Color3.fromRGB(80, 180, 120),
+    blue = Color3.fromRGB(100, 150, 255)
 }
 
 -- Главный контейнер
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 220)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
+mainFrame.Size = UDim2.new(0, 350, 0, 250)
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
 mainFrame.BackgroundColor3 = COLOR_SCHEME.light_bg
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
 
--- Верхняя серая панель
+-- Верхняя панель
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1, 0, 0, 40)
 topBar.Position = UDim2.new(0, 0, 0, 0)
@@ -52,10 +61,48 @@ content.Position = UDim2.new(0, 10, 0, 50)
 content.BackgroundTransparency = 1
 content.Parent = mainFrame
 
--- Статус с иконкой
+-- Ключевая система
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.new(1, 0, 0, 80)
+keyFrame.BackgroundTransparency = 1
+keyFrame.Parent = content
+
+local copyKeyButton = Instance.new("TextButton")
+copyKeyButton.Size = UDim2.new(1, 0, 0, 30)
+copyKeyButton.Position = UDim2.new(0, 0, 0, 0)
+copyKeyButton.BackgroundColor3 = COLOR_SCHEME.blue
+copyKeyButton.Text = "Copy Link & Key"
+copyKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyKeyButton.Font = Enum.Font.GothamBold
+copyKeyButton.TextSize = 14
+copyKeyButton.Parent = keyFrame
+
+local checkKeyButton = Instance.new("TextButton")
+checkKeyButton.Size = UDim2.new(1, 0, 0, 30)
+checkKeyButton.Position = UDim2.new(0, 0, 0, 40)
+checkKeyButton.BackgroundColor3 = COLOR_SCHEME.accent
+checkKeyButton.Text = "Key Check"
+checkKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+checkKeyButton.Font = Enum.Font.GothamBold
+checkKeyButton.TextSize = 14
+checkKeyButton.Visible = false
+checkKeyButton.Parent = keyFrame
+
+local keyStatus = Instance.new("TextLabel")
+keyStatus.Size = UDim2.new(1, 0, 0, 20)
+keyStatus.Position = UDim2.new(0, 0, 0, 75)
+keyStatus.BackgroundTransparency = 1
+keyStatus.Text = "Status: Key not checked"
+keyStatus.Font = Enum.Font.Gotham
+keyStatus.TextSize = 14
+keyStatus.TextColor3 = COLOR_SCHEME.text
+keyStatus.TextXAlignment = Enum.TextXAlignment.Left
+keyStatus.Parent = keyFrame
+
+-- Статус
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 20)
-statusLabel.Position = UDim2.new(0, 0, 0, 0)
+statusLabel.Position = UDim2.new(0, 0, 0, 90)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Text = "✅ Status: Ready"
 statusLabel.Font = Enum.Font.Gotham
@@ -63,19 +110,6 @@ statusLabel.TextSize = 14
 statusLabel.TextColor3 = COLOR_SCHEME.text
 statusLabel.TextXAlignment = Enum.TextXAlignment.Left
 statusLabel.Parent = content
-
--- Статистика
-local statsLabel = Instance.new("TextLabel")
-statsLabel.Size = UDim2.new(1, 0, 0, 60)
-statsLabel.Position = UDim2.new(0, 0, 0, 25)
-statsLabel.BackgroundTransparency = 1
-statsLabel.Text = "🔁 Dupe cycles: 0\n✨ Items created: 0\n📦 Last item: None"
-statsLabel.Font = Enum.Font.Gotham
-statsLabel.TextSize = 14
-statsLabel.TextColor3 = COLOR_SCHEME.text
-statsLabel.TextXAlignment = Enum.TextXAlignment.Left
-statsLabel.TextYAlignment = Enum.TextYAlignment.Top
-statsLabel.Parent = content
 
 -- Кнопка Dupe
 local dupeButton = Instance.new("TextButton")
@@ -86,6 +120,7 @@ dupeButton.Text = "⛔ Dupe: OFF"
 dupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 dupeButton.Font = Enum.Font.GothamBold
 dupeButton.TextSize = 16
+dupeButton.AutoButtonColor = false
 dupeButton.Parent = content
 
 -- Telegram
@@ -93,7 +128,7 @@ local telegramLabel = Instance.new("TextLabel")
 telegramLabel.Size = UDim2.new(1, -10, 0, 20)
 telegramLabel.Position = UDim2.new(0, 0, 1, -25)
 telegramLabel.BackgroundTransparency = 1
-telegramLabel.Text = "TELEGRAM: @RogsScript"
+telegramLabel.Text = "TELEGRAM: " .. CONFIG.TELEGRAM
 telegramLabel.Font = Enum.Font.GothamBold
 telegramLabel.TextSize = 14
 telegramLabel.TextColor3 = Color3.fromRGB(150, 150, 255)
@@ -112,20 +147,80 @@ activateButton.Font = Enum.Font.GothamBold
 activateButton.TextSize = 24
 activateButton.ZIndex = 10
 activateButton.AutoButtonColor = false
+activateButton.Parent = gui
 
 -- Делаем кнопку круглой
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(1, 0)
 corner.Parent = activateButton
 
-activateButton.Parent = gui
 mainFrame.Parent = gui
 
 -- Состояния
 local isMenuVisible = false
 local isDupeActive = false
+local isKeyValid = false
 
--- Анимация кнопки G
+-- Функция проверки ключа
+local function checkKey()
+    local success, response = pcall(function()
+        return HttpService:GetAsync(CONFIG.API_URL .. "?key=" .. CONFIG.KEY)
+    end)
+    
+    if success then
+        local data = HttpService:JSONDecode(response)
+        if data.valid then
+            keyStatus.Text = "✅ Status: Key valid"
+            checkKeyButton.Visible = false
+            isKeyValid = true
+            return true
+        end
+    end
+    
+    keyStatus.Text = "❌ Status: Invalid key"
+    return false
+end
+
+-- Копирование ключа
+copyKeyButton.MouseButton1Click:Connect(function()
+    setclipboard("Key: " .. CONFIG.KEY .. "\nTelegram: " .. CONFIG.TELEGRAM)
+    copyKeyButton.Text = "Copied!"
+    wait(1)
+    copyKeyButton.Text = "Copy Link & Key"
+    checkKeyButton.Visible = true
+end)
+
+-- Проверка ключа
+checkKeyButton.MouseButton1Click:Connect(function()
+    checkKey()
+end)
+
+-- Обработчик кнопки Dupe
+dupeButton.MouseButton1Click:Connect(function()
+    if not isKeyValid then
+        keyStatus.Text = "⚠️ Check key first!"
+        return
+    end
+    
+    isDupeActive = not isDupeActive
+    
+    -- Плавная анимация переключения
+    TweenService:Create(dupeButton, TweenInfo.new(0.3), {
+        BackgroundColor3 = isDupeActive and COLOR_SCHEME.green or COLOR_SCHEME.red,
+        Text = isDupeActive and "✅ Dupe: ON" or "⛔ Dupe: OFF"
+    }):Play()
+    
+    -- Обновляем статус
+    statusLabel.Text = isDupeActive and "🔄 Status: Active" or "✅ Status: Ready"
+    
+    if isDupeActive then
+        -- Здесь добавить логику дублирования
+    else
+        -- Остановка дублирования
+   end
+end)
+
+-- Активация меню
 activateButton.MouseButton1Click:Connect(function()
     isMenuVisible = not isMenuVisible
     mainFrame.Visible = isMenuVisible
@@ -136,42 +231,8 @@ activateButton.MouseButton1Click:Connect(function()
     }):Play()
 end)
 
--- Анимация при наведении на G
-activateButton.MouseEnter:Connect(function()
-    TweenService:Create(activateButton, TweenInfo.new(0.2), {
-        BackgroundTransparency = 0.3
-    }):Play()
-end)
-
-activateButton.MouseLeave:Connect(function()
-    TweenService:Create(activateButton, TweenInfo.new(0.2), {
-        BackgroundTransparency = isMenuVisible and 0.3 or 0.5
-    }):Play()
-end)
-
--- Обработчик кнопки Dupe
-dupeButton.MouseButton1Click:Connect(function()
-    isDupeActive = not isDupeActive
-    
-    -- Плавная анимация переключения
-    TweenService:Create(dupeButton, TweenInfo.new(0.3), {
-        BackgroundColor3 = isDupeActive and COLOR_SCHEME.green or COLOR_SCHEME.red,
-        Text = isDupeActive and "✅ Dupe: ON" or "⛔ Dupe: OFF"
-    }):Play()
-    
-    -- Обновляем статус
-    statusLabel.Text = isDupeActive and "✅ Status: Active" or "✅ Status: Ready"
-end)
-
--- Эффекты при наведении на Dupe кнопку
-dupeButton.MouseEnter:Connect(function()
-    TweenService:Create(dupeButton, TweenInfo.new(0.2), {
-        BackgroundTransparency = 0.1
-    }):Play()
-end)
-
-dupeButton.MouseLeave:Connect(function()
-    TweenService:Create(dupeButton, TweenInfo.new(0.2), {
-        BackgroundTransparency = 0
-    }):Play()
+-- Автопроверка ключа при запуске
+spawn(function()
+    wait(2) -- Даем время GUI загрузитьс
+    checkKey()
 end)
