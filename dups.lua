@@ -1,55 +1,80 @@
-local scriptActive = false
-local menuVisible = false
-local buttonRadius = 30
-local buttonPosX, buttonPosY = 50, 50
+return function()
+    -- Настройки интерфейса
+    local settings = {
+        button = {
+            radius = 30,
+            position = {x = 40, y = 40},
+            color = 0xFF000000,
+            textColor = 0xFFFFFFFF,
+            text = "G"
+        },
+        menu = {
+            color = 0xCC000000,
+            borderColor = 0xFFFFFFFF,
+            borderThickness = 1
+        }
+    }
 
-function main()
-    while true do
-        wait(0)
+    -- Состояние скрипта
+    local state = {
+        active = false,
+        menuVisible = false,
+        mousePressed = false
+    }
+
+    -- Основная функция рисования
+    local function Draw()
+        -- Рисуем кнопку
+        DrawCircle(
+            settings.button.position.x, 
+            settings.button.position.y, 
+            settings.button.radius, 
+            settings.button.color
+        )
         
-        -- Рисуем круглую кнопку активации
-        drawCircle(buttonPosX, buttonPosY, buttonRadius, 0xFF000000) -- Черный круг
-        drawText("G", buttonPosX - 5, buttonPosY - 10, 0xFFFFFFFF, 1.0) -- Белая буква G
-        
-        -- Если меню видимо - рисуем черный фон
-        if menuVisible then
-            local screenX, screenY = getScreenResolution()
-            drawRect(0, 0, screenX, screenY, 0x90000000) -- Полупрозрачный черный фон
+        -- Рисуем текст на кнопке
+        DrawText(
+            settings.button.text,
+            settings.button.position.x - 5, 
+            settings.button.position.y - 10,
+            settings.button.textColor,
+            1.0
+        )
+
+        -- Рисуем меню если активно
+        if state.menuVisible then
+            local screenX, screenY = GetScreenResolution()
+            DrawRect(0, 0, screenX, screenY, settings.menu.color)
         end
-        
-        -- Проверка клика по кнопке
-        if isMouseClicked() then
-            local mouseX, mouseY = getMousePos()
-            if (mouseX - buttonPosX)^2 + (mouseY - buttonPosY)^2 <= buttonRadius^2 then
-                menuVisible = not menuVisible
-                scriptActive = not scriptActive
+    end
+
+    -- Функция обработки ввода
+    local function HandleInput()
+        if IsMouseClicked() and not state.mousePressed then
+            state.mousePressed = true
+            
+            local mouseX, mouseY = GetMousePos()
+            local dx = mouseX - settings.button.position.x
+            local dy = mouseY - settings.button.position.y
+            
+            if dx*dx + dy*dy <= settings.button.radius*settings.button.radius then
+                state.menuVisible = not state.menuVisible
+                state.active = not state.active
             end
+        elseif not IsMouseClicked() then
+            state.mousePressed = false
         end
     end
-end
 
--- Вспомогательные функции
-function drawCircle(x, y, radius, color)
-    for angle = 0, 360, 1 do
-        local rad = math.rad(angle)
-        local px = x + math.cos(rad) * radius
-        local py = y + math.sin(rad) * radius
-        drawRect(px, py, px + 1, py + 1, color)
+    -- Основной цикл
+    local function MainLoop()
+        while true do
+            Wait(0)
+            HandleInput()
+            Draw()
+        end
     end
-end
 
-function drawRect(x1, y1, x2, y2, color)
-    -- Реализация рисования прямоугольника
-end
-
-function drawText(text, x, y, color, scale)
-    -- Реализация рисования текста
-end
-
-function isMouseClicked()
-    -- Проверка клика мыши
-end
-
-function getMousePos()
-    -- Получение позиции мыши
+    -- Запуск
+    MainLoop()
 end
