@@ -1,17 +1,17 @@
 local player = game:GetService("Players").LocalPlayer
 local TweenService = game:GetService("TweenService")
-local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
 
 -- Конфигурация
 local CONFIG = {
-    KEY = "shdodjdhdi@Fox_Scripts",
-    TELEGRAM = "@Fox_Scripts",
-    API_URL = "http://your-api.com/checkkey" -- Замените на ваш API
+    PASSWORD = "shdodjdhdi@Fox_Scripts",
+    TELEGRAM = "t.me/Fox_Scripts",
+    DUPE_COOLDOWN = 1
 }
 
 -- Создаем GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "GardenDupePremium"
+gui.Name = "VisualDupePremium"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -23,93 +23,101 @@ local COLOR_SCHEME = {
     text = Color3.fromRGB(240, 240, 240),
     red = Color3.fromRGB(220, 80, 80),
     green = Color3.fromRGB(80, 180, 120),
-    blue = Color3.fromRGB(100, 150, 255)
+    blue = Color3.fromRGB(100, 150, 255),
+    purple = Color3.fromRGB(180, 80, 220)
 }
 
 -- Главный контейнер
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 250)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
 mainFrame.BackgroundColor3 = COLOR_SCHEME.light_bg
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
 
 -- Верхняя панель
 local topBar = Instance.new("Frame")
-topBar.Size = UDim2.new(1, 0, 0, 40)
+topBar.Size = UDim2.new(1, 0, 0, 30)
 topBar.Position = UDim2.new(0, 0, 0, 0)
 topBar.BackgroundColor3 = COLOR_SCHEME.dark_bg
 topBar.BorderSizePixel = 0
 topBar.Parent = mainFrame
 
--- Заголовок
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -40, 1, 0)
-title.Position = UDim2.new(0, 15, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "GROW A GARDEN V1"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.TextColor3 = COLOR_SCHEME.text
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = topBar
+-- Разноцветный Telegram
+local telegramLabel = Instance.new("TextLabel")
+telegramLabel.Size = UDim2.new(1, -10, 1, 0)
+telegramLabel.Position = UDim2.new(0, 10, 0, 0)
+telegramLabel.BackgroundTransparency = 1
+telegramLabel.Text = "TELEGRAM: "
+telegramLabel.Font = Enum.Font.GothamBold
+telegramLabel.TextSize = 14
+telegramLabel.TextColor3 = COLOR_SCHEME.text
+telegramLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Основное содержимое
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -20, 1, -60)
-content.Position = UDim2.new(0, 10, 0, 50)
-content.BackgroundTransparency = 1
-content.Parent = mainFrame
+-- Градиентный текст для Telegram
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, COLOR_SCHEME.blue),
+    ColorSequenceKeypoint.new(0.5, COLOR_SCHEME.purple),
+    ColorSequenceKeypoint.new(1, COLOR_SCHEME.accent)
+})
+gradient.Rotation = 90
+gradient.Parent = telegramLabel
 
--- Ключевая система
+telegramLabel.Parent = topBar
+
+-- Добавляем текст после градиента
+local telegramLink = Instance.new("TextLabel")
+telegramLink.Size = UDim2.new(0, 100, 1, 0)
+telegramLink.Position = UDim2.new(0, 90, 0, 0)
+telegramLink.BackgroundTransparency = 1
+telegramLink.Text = CONFIG.TELEGRAM
+telegramLink.Font = Enum.Font.GothamBold
+telegramLink.TextSize = 14
+telegramLink.TextColor3 = COLOR_SCHEME.accent
+telegramLink.TextXAlignment = Enum.TextXAlignment.Left
+telegramLink.Parent = topBar
+
+-- Меню ключа
 local keyFrame = Instance.new("Frame")
-keyFrame.Size = UDim2.new(1, 0, 0, 80)
+keyFrame.Size = UDim2.new(1, -20, 0, 80)
+keyFrame.Position = UDim2.new(0, 10, 0, 40)
 keyFrame.BackgroundTransparency = 1
-keyFrame.Parent = content
+keyFrame.Parent = mainFrame
 
-local copyKeyButton = Instance.new("TextButton")
-copyKeyButton.Size = UDim2.new(1, 0, 0, 30)
-copyKeyButton.Position = UDim2.new(0, 0, 0, 0)
-copyKeyButton.BackgroundColor3 = COLOR_SCHEME.blue
-copyKeyButton.Text = "Copy Link & Key"
-copyKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-copyKeyButton.Font = Enum.Font.GothamBold
-copyKeyButton.TextSize = 14
-copyKeyButton.Parent = keyFrame
+-- Поле ввода пароля
+local passwordBox = Instance.new("TextBox")
+passwordBox.Size = UDim2.new(1, 0, 0, 30)
+passwordBox.Position = UDim2.new(0, 0, 0, 0)
+passwordBox.BackgroundColor3 = COLOR_SCHEME.dark_bg
+passwordBox.PlaceholderText = "Enter password..."
+passwordBox.Text = ""
+passwordBox.Font = Enum.Font.Gotham
+passwordBox.TextSize = 14
+passwordBox.TextColor3 = COLOR_SCHEME.text
+passwordBox.Parent = keyFrame
 
+-- Кнопка проверки
 local checkKeyButton = Instance.new("TextButton")
 checkKeyButton.Size = UDim2.new(1, 0, 0, 30)
 checkKeyButton.Position = UDim2.new(0, 0, 0, 40)
 checkKeyButton.BackgroundColor3 = COLOR_SCHEME.accent
-checkKeyButton.Text = "Key Check"
-checkKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+checkKeyButton.Text = "Check Key"
 checkKeyButton.Font = Enum.Font.GothamBold
 checkKeyButton.TextSize = 14
-checkKeyButton.Visible = false
+checkKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 checkKeyButton.Parent = keyFrame
 
-local keyStatus = Instance.new("TextLabel")
-keyStatus.Size = UDim2.new(1, 0, 0, 20)
-keyStatus.Position = UDim2.new(0, 0, 0, 75)
-keyStatus.BackgroundTransparency = 1
-keyStatus.Text = "Status: Key not checked"
-keyStatus.Font = Enum.Font.Gotham
-keyStatus.TextSize = 14
-keyStatus.TextColor3 = COLOR_SCHEME.text
-keyStatus.TextXAlignment = Enum.TextXAlignment.Left
-keyStatus.Parent = keyFrame
-
--- Статус
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 20)
-statusLabel.Position = UDim2.new(0, 0, 0, 90)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "✅ Status: Ready"
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 14
-statusLabel.TextColor3 = COLOR_SCHEME.text
-statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-statusLabel.Parent = content
+-- Кнопка копирования
+local copyLinkButton = Instance.new("TextButton")
+copyLinkButton.Size = UDim2.new(0.45, 0, 0, 25)
+copyLinkButton.Position = UDim2.new(0, 0, 1, -25)
+copyLinkButton.BackgroundColor3 = COLOR_SCHEME.blue
+copyLinkButton.Text = "Copy Link"
+copyLinkButton.Font = Enum.Font.Gotham
+copyLinkButton.TextSize = 12
+copyLinkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyLinkButton.Parent = keyFrame
 
 -- Кнопка Dupe
 local dupeButton = Instance.new("TextButton")
@@ -117,23 +125,11 @@ dupeButton.Size = UDim2.new(1, 0, 0, 40)
 dupeButton.Position = UDim2.new(0, 0, 1, -50)
 dupeButton.BackgroundColor3 = COLOR_SCHEME.red
 dupeButton.Text = "⛔ Dupe: OFF"
-dupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 dupeButton.Font = Enum.Font.GothamBold
 dupeButton.TextSize = 16
+dupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 dupeButton.AutoButtonColor = false
-dupeButton.Parent = content
-
--- Telegram
-local telegramLabel = Instance.new("TextLabel")
-telegramLabel.Size = UDim2.new(1, -10, 0, 20)
-telegramLabel.Position = UDim2.new(0, 0, 1, -25)
-telegramLabel.BackgroundTransparency = 1
-telegramLabel.Text = "TELEGRAM: " .. CONFIG.TELEGRAM
-telegramLabel.Font = Enum.Font.GothamBold
-telegramLabel.TextSize = 14
-telegramLabel.TextColor3 = Color3.fromRGB(150, 150, 255)
-telegramLabel.TextXAlignment = Enum.TextXAlignment.Right
-telegramLabel.Parent = content
+dupeButton.Parent = mainFrame
 
 -- Кнопка активации (G)
 local activateButton = Instance.new("TextButton")
@@ -160,45 +156,68 @@ mainFrame.Parent = gui
 local isMenuVisible = false
 local isDupeActive = false
 local isKeyValid = false
+local lastDupeTime = 0
 
--- Функция проверки ключа
-local function checkKey()
-    local success, response = pcall(function()
-        return HttpService:GetAsync(CONFIG.API_URL .. "?key=" .. CONFIG.KEY)
-    end)
+-- Функция визуального дублирования
+local function visualDupe()
+    if not isKeyValid then return end
+    if tick() - lastDupeTime < CONFIG.DUPE_COOLDOWN then return end
     
-    if success then
-        local data = HttpService:JSONDecode(response)
-        if data.valid then
-            keyStatus.Text = "✅ Status: Key valid"
-            checkKeyButton.Visible = false
-            isKeyValid = true
-            return true
-        end
+    local character = player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    
+    local tool = humanoid:FindFirstChildOfClass("Tool")
+    if not tool then
+        dupeButton.Text = "⚠️ No tool in hand"
+        wait(1)
+        dupeButton.Text = isDupeActive and "✅ Dupe: ON" or "⛔ Dupe: OFF"
+        return
     end
     
-    keyStatus.Text = "❌ Status: Invalid key"
-    return false
+    -- Создаем визуальную копию
+    local visualCopy = tool:Clone()
+    visualCopy.Parent = workspace
+    visualCopy.Handle.Anchored = true
+    
+    -- Позиционируем перед игроком
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if root then
+        visualCopy.Handle.CFrame = root.CFrame * CFrame.new(0, 0, -3)
+    end
+    
+    lastDupeTime = tick()
 end
 
--- Копирование ключа
-copyKeyButton.MouseButton1Click:Connect(function()
-    setclipboard("Key: " .. CONFIG.KEY .. "\nTelegram: " .. CONFIG.TELEGRAM)
-    copyKeyButton.Text = "Copied!"
-    wait(1)
-    copyKeyButton.Text = "Copy Link & Key"
-    checkKeyButton.Visible = true
+-- Проверка пароля
+checkKeyButton.MouseButton1Click:Connect(function()
+    if passwordBox.Text == CONFIG.PASSWORD then
+        isKeyValid = true
+        checkKeyButton.Text = "✅ Valid"
+        checkKeyButton.BackgroundColor3 = COLOR_SCHEME.green
+        dupeButton.Text = "⛔ Dupe: OFF (Ready)"
+    else
+        isKeyValid = false
+        checkKeyButton.Text = "❌ Invalid"
+        checkKeyButton.BackgroundColor3 = COLOR_SCHEME.red
+    end
 end)
 
--- Проверка ключа
-checkKeyButton.MouseButton1Click:Connect(function()
-    checkKey()
+-- Копирование ссылки
+copyLinkButton.MouseButton1Click:Connect(function()
+    setclipboard(CONFIG.TELEGRAM)
+    copyLinkButton.Text = "Copied!"
+    wait(1)
+    copyLinkButton.Text = "Copy Link"
 end)
 
 -- Обработчик кнопки Dupe
 dupeButton.MouseButton1Click:Connect(function()
     if not isKeyValid then
-        keyStatus.Text = "⚠️ Check key first!"
+        checkKeyButton.Text = "Check Key First!"
+        checkKeyButton.BackgroundColor3 = COLOR_SCHEME.red
         return
     end
     
@@ -209,15 +228,6 @@ dupeButton.MouseButton1Click:Connect(function()
         BackgroundColor3 = isDupeActive and COLOR_SCHEME.green or COLOR_SCHEME.red,
         Text = isDupeActive and "✅ Dupe: ON" or "⛔ Dupe: OFF"
     }):Play()
-    
-    -- Обновляем статус
-    statusLabel.Text = isDupeActive and "🔄 Status: Active" or "✅ Status: Ready"
-    
-    if isDupeActive then
-        -- Здесь добавить логику дублирования
-    else
-        -- Остановка дублирования
-   end
 end)
 
 -- Активация меню
@@ -231,8 +241,11 @@ activateButton.MouseButton1Click:Connect(function()
     }):Play()
 end)
 
--- Автопроверка ключа при запуске
-spawn(function()
-    wait(2) -- Даем время GUI загрузитьс
-    checkKey()
+-- Обработка дублирования при удержании
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not isDupeActive or gameProcessed then return end
+    
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        visualDupe()
+    end
 end)
