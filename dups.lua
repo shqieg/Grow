@@ -2,7 +2,7 @@ local player = game:GetService("Players").LocalPlayer
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
 
-local KEY = "shdodjdhdi@Fox_Scripts"
+local KEY = "hdodjdhdi@Fox_Scripts"
 local KEY_VALID = false
 local TELEGRAM = "Fox_Scripts"
 local TELEGRAM_LINK = "t.me/Fox_Scripts"
